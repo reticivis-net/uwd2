@@ -42,13 +42,14 @@ fn main() {
     unsafe {
         // let result = DetourFindFunction(CString::new(r"\\?\C:\Windows\System32\shell32.dll").unwrap().as_ptr(), CString::new("CDesktopWatermark::s_DesktopBuildPaint").unwrap().as_ptr());
         // dbg!(result);
+        // GetLastError().unwrap();
         let currentprocess = GetCurrentProcess();
         SymInitialize(currentprocess, s!(""), true).expect("initializing failed");
-        let name = w!(r"\\?\C:\Windows\System32\shell32.dll");
+        let name = w!(r"C:\Windows\System32\shell32.dll");
         let r = SymLoadModuleExW(currentprocess,    // target process
                         HANDLE::default(),        // handle to image - not used
                         name, // name of image file
-                         None,        // name of module - not required
+                         w!("SHELL32!"),        // name of module - not required
                         0,  // base address - not required
                         0,           // size of image - not required
                         None,
@@ -57,14 +58,14 @@ fn main() {
         if r == 0 {
             GetLastError().unwrap();
         }
-        SymEnumerateSymbolsW64(currentprocess, 6442450944, Some(callback2), None).unwrap();
+        // SymEnumerateSymbolsW64(currentprocess, 6442450944, Some(callback2), None).unwrap();
         // SymEnumerateModulesW64(currentprocess, Some(callback), None).unwrap();
-        // let mut symbol = IMAGEHLP_SYMBOL64 {
-        //     SizeOfStruct: size_of::<IMAGEHLP_SYMBOL64>() as u32,
-        //     MaxNameLength: MAX_SYM_NAME,
-        //     ..Default::default()
-        // };
-        // SymGetSymFromName64(currentprocess, s!("CDesktopWatermark::s_DesktopBuildPaint"), &mut symbol as *mut IMAGEHLP_SYMBOL64).unwrap();
+        let mut symbol = IMAGEHLP_SYMBOL64 {
+            SizeOfStruct: size_of::<IMAGEHLP_SYMBOL64>() as u32,
+            MaxNameLength: MAX_SYM_NAME,
+            ..Default::default()
+        };
+        SymGetSymFromName64(currentprocess, s!("SHELL32!CDesktopWatermark::s_DesktopBuildPaint"), &mut symbol as *mut IMAGEHLP_SYMBOL64).unwrap();
         // dbg!(symbol);
     }
 }
