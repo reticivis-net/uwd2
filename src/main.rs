@@ -1,13 +1,14 @@
-use windows::Win32::System::Diagnostics::Debug::{IMAGEHLP_SYMBOL64, MAX_SYM_NAME, SYM_LOAD_FLAGS, SYMBOL_INFO, SYMBOL_INFOW, SymEnumerateModules64, SymEnumerateModulesW64, SymEnumerateSymbols64, SymEnumerateSymbolsW64, SymFromName, SymFromNameW, SymGetSymFromName64, SymInitialize, SymLoadModule64, SymLoadModuleExW};
+use windows::Win32::System::Diagnostics::Debug::{IMAGEHLP_MODULE64, IMAGEHLP_SYMBOL64, MAX_SYM_NAME, SYM_LOAD_FLAGS, SYMBOL_INFO, SYMBOL_INFOW, SymEnumerateModules64, SymEnumerateModulesW64, SymEnumerateSymbols64, SymEnumerateSymbolsW64, SymFromName, SymFromNameW, SymGetModuleInfo64, SymGetSymFromName64, SymInitialize, SymLoadModule64, SymLoadModuleExW, SYMOPT_DEFERRED_LOADS, SYMOPT_UNDNAME, SymSetOptions};
 use std::error::Error;
 use std::ffi::{c_char, c_void, CStr, CString};
 use std::mem::size_of;
 use std::ptr;
-use windows::core::{s, w};
+use windows::core::{PCSTR, s, w};
 // use windows::Win32::System::LibraryLoader::GetModuleFileNameA;
 // use windows::Win32::System::Threading::GetCurrentThread;
 use windows::Win32::Foundation::{HANDLE, MAX_PATH, HINSTANCE, NO_ERROR, WIN32_ERROR, GetLastError, TRUE, BOOL};
 use windows::Win32::System::Threading::GetCurrentProcess;
+use windows::Win32::System::LibraryLoader::{LOAD_LIBRARY_FLAGS, LoadLibraryExA};
 
 
 #[link(name = "detours", kind = "static")]
@@ -44,28 +45,39 @@ fn main() {
         // dbg!(result);
         // GetLastError().unwrap();
         let currentprocess = GetCurrentProcess();
-        SymInitialize(currentprocess, s!(""), true).expect("initializing failed");
-        let name = w!(r"C:\Windows\System32\shell32.dll");
-        let r = SymLoadModuleExW(currentprocess,    // target process
+        SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+        SymInitialize(currentprocess, s!("SRV*"), true).expect("initializing failed");
+        let name = s!(r"C:\Windows\System32\shell32.dll");
+        let module = LoadLibraryExA(name, HANDLE::default(), LOAD_LIBRARY_FLAGS::default()).unwrap();
+        dbg!(module);
+
+        let r = SymLoadModule64(currentprocess,    // target process
                         HANDLE::default(),        // handle to image - not used
                         name, // name of image file
-                         w!("SHELL32!"),        // name of module - not required
-                        0,  // base address - not required
+                         PCSTR::null(),        // name of module - not required
+                        module.0 as u64,  // base address - not required
                         0,           // size of image - not required
-                        None,
-            SYM_LOAD_FLAGS::default()
         );
         if r == 0 {
             GetLastError().unwrap();
         }
-        // SymEnumerateSymbolsW64(currentprocess, 6442450944, Some(callback2), None).unwrap();
-        // SymEnumerateModulesW64(currentprocess, Some(callback), None).unwrap();
-        let mut symbol = IMAGEHLP_SYMBOL64 {
-            SizeOfStruct: size_of::<IMAGEHLP_SYMBOL64>() as u32,
-            MaxNameLength: MAX_SYM_NAME,
+        let mut modinfo = IMAGEHLP_MODULE64 {
+            SizeOfStruct: size_of::<IMAGEHLP_MODULE64>() as u32,
             ..Default::default()
         };
-        SymGetSymFromName64(currentprocess, s!("SHELL32!CDesktopWatermark::s_DesktopBuildPaint"), &mut symbol as *mut IMAGEHLP_SYMBOL64).unwrap();
-        // dbg!(symbol);
+        // dbg!(modinfo);
+        SymGetModuleInfo64(currentprocess, module.0 as u64, &mut modinfo as *mut IMAGEHLP_MODULE64).unwrap();
+        dbg!(modinfo);
+        let modname = PCSTR::from_raw(&modinfo.ModuleName as *const u8);
+        println!("{}", modname.display()); // is shell32
+        // SymEnumerateSymbolsW64(currentprocess, 6442450944, Some(callback2), None).unwrap();
+        // SymEnumerateModulesW64(currentprocess, Some(callback), None).unwrap();
+        let mut symbol = SYMBOL_INFO {
+            SizeOfStruct: size_of::<SYMBOL_INFO>() as u32,
+            MaxNameLen: MAX_SYM_NAME,
+            ..Default::default()
+        };
+        SymFromName(currentprocess, s!("shell32!CDesktopWatermark::s_DesktopBuildPaint"), &mut symbol as *mut SYMBOL_INFO).unwrap();
+        dbg!(symbol);
     }
 }
