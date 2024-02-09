@@ -1,5 +1,5 @@
 use std::mem::size_of;
-use windows::core::{s, PCSTR, GUID};
+use windows::core::{s, PCSTR};
 use windows::Win32::Foundation::{GetLastError, HANDLE};
 use windows::Win32::System::Diagnostics::Debug::{
     SymGetModuleInfo64, SymInitialize, SymLoadModuleEx, SymSetOptions, IMAGEHLP_MODULE64,
@@ -39,5 +39,6 @@ pub unsafe fn get_guid() -> String {
     .unwrap();
     let sig = modinfo.PdbSig70.to_u128();
     let age = modinfo.PdbAge;
+    // format as
     format!("{sig:032X}{age:X}")
 }
