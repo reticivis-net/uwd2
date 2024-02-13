@@ -1,16 +1,13 @@
 use std::io;
-use std::io::Cursor;
 use pdb::FallibleIterator;
-use pdb::PublicSymbol;
 use crate::cache_pdb::get_rva;
-use crate::fetch_pdb::{fetch};
-use crate::get_guid::get_guid;
-use crate::parse_pdb::parse_pdb;
+use crate::explorer_modinfo::get_guid;
 
 mod fetch_pdb;
-mod get_guid;
+mod explorer_modinfo;
 mod parse_pdb;
 mod cache_pdb;
+mod inject;
 
 fn main() {
     let guid;
@@ -18,6 +15,7 @@ fn main() {
         guid = get_guid();
     }
     let rva = get_rva(guid);
+    unsafe { inject::inject(rva); }
     println!("{rva:#x}");
     // dbg!(pdbfile);
 }
