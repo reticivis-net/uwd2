@@ -10,6 +10,7 @@ pub unsafe fn inject(rva: u32) {
     let explorerhandle = get_explorer_handle();
     println!("Injecting ret...");
     // ret instruction
+    // NOTE: THIS IS FOR X86, WILL NOT WORK ON ARM
     let buffer: [u8; 1] = [0xC3];
     // write return instruction to address of function, effectively disabling it
     WriteProcessMemory(
