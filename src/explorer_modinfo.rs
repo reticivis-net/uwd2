@@ -11,7 +11,7 @@ use windows::Win32::System::LibraryLoader::{LoadLibraryExA, LOAD_LIBRARY_FLAGS, 
 use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcess, PROCESS_ALL_ACCESS};
 
 pub unsafe fn get_guid() -> String {
-    let modinfo = get_explorer_modinfo();
+    let modinfo = get_shell32_modinfo();
     let sig = modinfo.PdbSig70.to_u128();
     let age = modinfo.PdbAge;
     // format as hex as michael expects
@@ -19,7 +19,7 @@ pub unsafe fn get_guid() -> String {
 }
 
 pub unsafe fn get_shell32_offset() -> u64 {
-    let modinfo = get_explorer_modinfo();
+    let modinfo = get_shell32_modinfo();
     modinfo.BaseOfImage
 }
 
@@ -47,7 +47,9 @@ pub unsafe fn get_explorer_handle() -> HANDLE {
    OpenProcess(PROCESS_ALL_ACCESS, FALSE, explorerid).unwrap()
 }
 
-pub unsafe fn get_explorer_modinfo() -> IMAGEHLP_MODULE64 {
+pub unsafe fn get_shell32_modinfo() -> IMAGEHLP_MODULE64 {
+    // get info of shell32.dll using running explorer.exe
+
     let explorerhandle = get_explorer_handle();
 
     // let currentprocess = GetCurrentProcess();
@@ -81,6 +83,6 @@ pub unsafe fn get_explorer_modinfo() -> IMAGEHLP_MODULE64 {
     )
     .unwrap();
     CloseHandle(explorerhandle.0);
-    dbg!(modinfo);
+    // dbg!(modinfo);
     modinfo
 }
