@@ -2,6 +2,7 @@ use std::ffi::c_void;
 use windows::core::imp::CloseHandle;
 use crate::explorer_modinfo::{get_explorer_handle, get_shell32_offset};
 use windows::Win32::System::Diagnostics::Debug::WriteProcessMemory;
+use windows::Win32::UI::Shell::{SHChangeNotify, SHCNE_ASSOCCHANGED, SHCNF_IDLIST};
 
 pub unsafe fn inject(rva: u32) {
     println!("Getting shell32 offset...");
@@ -24,4 +25,13 @@ pub unsafe fn inject(rva: u32) {
     .unwrap();
     println!("Injected!");
     CloseHandle(explorerhandle.0);
+}
+
+pub unsafe fn refresh() {
+    println!("Refreshing desktop...");
+    // i have no idea why this works
+    // "A file type association has changed" causes the desktop to refresh
+    // which makes the watermark go away so whatever it works
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None);
+    println!("Refreshed!")
 }

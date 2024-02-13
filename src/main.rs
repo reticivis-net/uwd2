@@ -16,7 +16,10 @@ fn main() {
     }
     let rva = get_rva(guid);
     println!("PVA is {rva:#x}");
-    unsafe { inject::inject(rva); }
+    unsafe {
+        inject::inject(rva);
+        inject::refresh();
+    }
 
     // dbg!(pdbfile);
 }
