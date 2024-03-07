@@ -1,27 +1,39 @@
-use std::fs;
-use std::fs::File;
-use std::io::{Seek, SeekFrom, Write};
-use std::path::Path;
-use directories::ProjectDirs;
 use crate::constants;
 use crate::constants::*;
+use directories::ProjectDirs;
+use std::ffi::OsStr;
+use std::fs::{read, write};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::Path;
+use winreg::enums::HKEY_CLASSES_ROOT;
+use winreg::RegKey;
 
+const DEFAULT_SHELL32_REG_PATH: &str = r"%SystemRoot%\system32\shell32.dll";
 pub fn patch(rva: u32) {
     let dir = data_dir();
-    let path = dir.join("shell32.unpatched.dll");
-    fs::copy(SHELL32_PATH, path).expect("Unable to save copy of shell32.");
-    let mut shell32 = File::open(SHELL32_PATH).expect("Unable to open file");
-    shell32
-        .seek(SeekFrom::Start(rva as u64))
-        .expect("Unable to seek.");
-    let buffer: [u8; 1] = [RET];
-    shell32.write(&buffer).expect("Unable to patch file.");
+    let path = dir.join("shell32.patched.dll");
+    // read file
+    let mut s32 = read(SHELL32_PATH).expect("Unable to read shell32.dll");
+    // patch
+    s32[rva as usize] = RET;
+    // write
+    write(&path, s32).expect("Unable to write patched file");
+    // evil registry hack to point windows to our file
+    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
+    let key = hkcr
+        .open_subkey(r"CLSID\{0010890e-8789-413c-adbc-48f5b511b3af}\InProcServer32")
+        .unwrap();
+    key.set_value("", &path.as_os_str()).unwrap()
 }
 
 pub fn unpatch() {
-    let dir = data_dir();
-    let path = dir.join("shell32.unpatched.dll");
-    fs::copy(path, SHELL32_PATH).expect("Unable to save copy of shell32.");
+    // undo evil registry hack
+    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
+    let key = hkcr
+        .open_subkey(r"CLSID\{0010890e-8789-413c-adbc-48f5b511b3af}\InProcServer32")
+        .unwrap();
+    key.set_value("", &OsStr::new(DEFAULT_SHELL32_REG_PATH))
+        .unwrap()
 }
 
 pub fn kill_explorer() {
