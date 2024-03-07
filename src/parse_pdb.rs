@@ -1,5 +1,6 @@
-use pdb::{FallibleIterator, Rva};
 use std::io::Cursor;
+
+use pdb::FallibleIterator;
 
 pub fn parse_pdb(pdbfile: Vec<u8>) -> u32 {
     let pdbreader = Cursor::new(pdbfile);

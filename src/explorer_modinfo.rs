@@ -1,14 +1,15 @@
 use std::mem::size_of;
 use std::path::Path;
-use windows::core::{s, PCSTR};
+
+use windows::core::{PCSTR, s};
 use windows::core::imp::CloseHandle;
 use windows::Win32::Foundation::{FALSE, GetLastError, HANDLE, HMODULE};
 use windows::Win32::System::Diagnostics::Debug::{
-    SymGetModuleInfo64, SymInitialize, SymLoadModuleEx, SymSetOptions, IMAGEHLP_MODULE64,
-    SYMOPT_UNDNAME, SYM_LOAD_FLAGS,
+    IMAGEHLP_MODULE64, SYM_LOAD_FLAGS, SymGetModuleInfo64, SymInitialize, SymLoadModuleEx,
+    SYMOPT_UNDNAME, SymSetOptions,
 };
-use windows::Win32::System::LibraryLoader::{LoadLibraryExA, LOAD_LIBRARY_FLAGS, GetModuleHandleExA};
-use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcess, PROCESS_ALL_ACCESS};
+use windows::Win32::System::LibraryLoader::GetModuleHandleExA;
+use windows::Win32::System::Threading::{OpenProcess, PROCESS_ALL_ACCESS};
 
 pub unsafe fn get_guid() -> String {
     let modinfo = get_shell32_modinfo();

@@ -1,0 +1,5 @@
+Universal Watermark Disabler 2 ("UWD2") v{}
+Created by: Melody https://reticivis.net/
+Source code, project info, and FAQs: https://github.com/reticivis-net/uwd2
+Inspiration for this project: Universal Watermark Disabler by Painter701: https://github.com/pr701/universal-watermark-disabler
+Written in Rust
