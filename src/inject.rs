@@ -1,6 +1,7 @@
 use std::ffi::c_void;
 use windows::core::imp::CloseHandle;
 use crate::explorer_modinfo::{get_explorer_handle, get_shell32_offset};
+use crate::constants::*;
 use windows::Win32::System::Diagnostics::Debug::WriteProcessMemory;
 use windows::Win32::UI::Shell::{SHChangeNotify, SHCNE_ASSOCCHANGED, SHCNF_IDLIST};
 
@@ -10,9 +11,7 @@ pub unsafe fn inject(rva: u32) {
     println!("Offset of shell32 inside explorer.exe is {offset:#x}");
     let explorerhandle = get_explorer_handle();
     println!("Injecting ret...");
-    // ret instruction
-    // NOTE: THIS IS FOR X86, WILL NOT WORK ON ARM
-    let buffer: [u8; 1] = [0xC3];
+    let buffer: [u8; 1] = [RET];
     // write return instruction to address of function, effectively disabling it
     WriteProcessMemory(
         explorerhandle,

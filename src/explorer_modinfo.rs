@@ -1,6 +1,7 @@
 use std::mem::size_of;
 use std::path::Path;
-
+use sysinfo::Process;
+use crate::constants::*;
 use windows::core::{PCSTR, s};
 use windows::core::imp::CloseHandle;
 use windows::Win32::Foundation::{FALSE, GetLastError, HANDLE, HMODULE};
@@ -56,7 +57,7 @@ pub unsafe fn get_shell32_modinfo() -> IMAGEHLP_MODULE64 {
     // let currentprocess = GetCurrentProcess();
     SymInitialize(explorerhandle, PCSTR::null(), true).expect("initializing failed");
     SymSetOptions(SYMOPT_UNDNAME);
-    let name = s!(r"C:\Windows\System32\shell32.dll");
+    let name = PCSTR::from_raw(format!("{}\0", SHELL32_PATH).as_ptr());
     let mut module = HMODULE::default();
     GetModuleHandleExA(0, name, &mut module as *mut HMODULE).unwrap();
     // let module = LoadLibraryExA(name, HANDLE::default(), LOAD_LIBRARY_FLAGS::default()).unwrap();
@@ -71,7 +72,7 @@ pub unsafe fn get_shell32_modinfo() -> IMAGEHLP_MODULE64 {
         SYM_LOAD_FLAGS::default(),
     );
     if r == 0 {
-        GetLastError().unwrap();
+        GetLastError();
     }
     let mut modinfo = IMAGEHLP_MODULE64 {
         SizeOfStruct: size_of::<IMAGEHLP_MODULE64>() as u32,

@@ -1,13 +1,13 @@
 use std::fs;
-use directories::ProjectDirs;
+
+use crate::constants::*;
 use crate::fetch_pdb;
 use crate::fetch_pdb::fetch;
 use crate::parse_pdb::parse_pdb;
 
 pub fn get_rva(guid:String) -> u32 {
     // quick way to get usable directory
-    let binding = ProjectDirs::from("net", "reticivis",  "UWD2").unwrap();
-    let dir = binding.data_dir();
+    let dir = data_dir();
     // dbg!(dir);
     // .rva is arbitrary, im storing a single u32 so there isnt exactly a good extension for this
     let pdbpath = dir.join(guid.clone() + ".rva");
@@ -24,10 +24,10 @@ pub fn get_rva(guid:String) -> u32 {
         println!("Parsed! Caching...");
         // remove existing stuff, we dont need to keep around old pdbs that arent valid
         if dir.exists() {
-            fs::remove_dir_all(dir).unwrap();
+            fs::remove_dir_all(&dir).unwrap();
         }
         // create directories
-        fs::create_dir_all(dir).unwrap();
+        fs::create_dir_all(&dir).unwrap();
         // write file
         // yes im implicitly using BE here for consistency rather than NE
         fs::write(pdbpath, rva.to_be_bytes()).unwrap();
