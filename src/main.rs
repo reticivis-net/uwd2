@@ -49,8 +49,8 @@ fn inject() {
     }
 }
 fn main() {
-    unsafe { inject::refresh(); }
-    return;
+    // unsafe { inject::refresh(); }
+    // return;
     match env::args().collect::<Vec<String>>().get(1) {
         None => inject(),
         Some(arg) => match arg.as_str() {

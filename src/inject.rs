@@ -2,10 +2,14 @@ use crate::constants::*;
 use crate::explorer_modinfo::{get_explorer_handle, get_shell32_offset};
 use std::ffi::c_void;
 use windows::core::imp::CloseHandle;
+use windows::core::s;
 use windows::Win32::Foundation::{GetLastError, LPARAM, WPARAM};
 use windows::Win32::System::Diagnostics::Debug::WriteProcessMemory;
-use windows::Win32::UI::Shell::{SHChangeNotify, SHCNE_ASSOCCHANGED, SHCNF_IDLIST, SHELLSTATEA, SHGetSetSettings, SSF_HIDEICONS, SSF_MASK};
-use windows::Win32::UI::WindowsAndMessaging::{HWND_BROADCAST, SendMessageTimeoutA, SMTO_ABORTIFHUNG, WM_SETTINGCHANGE};
+use windows::Win32::UI::Shell::{
+    SHChangeNotify, SHGetSetSettings, SHCNE_ASSOCCHANGED, SHCNF_IDLIST, SHELLSTATEA, SSF_HIDEICONS,
+    SSF_MASK,
+};
+use windows::Win32::UI::WindowsAndMessaging::{FindWindowA, GetWindow, SendMessageA, SendMessageTimeoutA, GW_CHILD, HWND_BROADCAST, SMTO_ABORTIFHUNG, WM_COMMAND, WM_SETTINGCHANGE, GetWindowInfo, WINDOWINFO, WS_VISIBLE};
 
 pub unsafe fn inject(rva: u32) {
     println!("Getting shell32 offset...");
@@ -30,30 +34,28 @@ pub unsafe fn inject(rva: u32) {
 
 pub unsafe fn refresh() {
     println!("Refreshing desktop...");
-    // i have no idea why this works
-    // "A file type association has changed" causes the desktop to refresh
-    // which makes the watermark go away so whatever it works
-    // SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None);
+    let hWnd = GetWindow(FindWindowA(s!("Progman"), s!("Program Manager")), GW_CHILD);
 
-    let mut ss = SHELLSTATEA::default();
-    SHGetSetSettings(Some(&mut ss as *mut _), SSF_MASK(u32::MAX), false);
-    GetLastError().ok().unwrap();
+    // check if desktop icons are visible
+    let hWnd2 = GetWindow(hWnd, GW_CHILD);
+    let mut wi = WINDOWINFO::default();
+    wi.cbSize = std::mem::size_of::<WINDOWINFO>() as u32;
+    GetWindowInfo(hWnd2, &mut wi as *mut _).unwrap();
+    let visible = wi.dwStyle & WS_VISIBLE == WS_VISIBLE;
+
+    if visible {
+        // i have no idea why this works
+        // "A file type association has changed" causes the desktop to refresh
+        // which makes the watermark go away so whatever it works
+        SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None);
+    } else {
+        // if icons are hidden, no refreshing or anything will work, so just unhide and rehide the icons
+        SendMessageA(hWnd, WM_COMMAND, WPARAM(0x7402), LPARAM::default());
+        SendMessageA(hWnd, WM_COMMAND, WPARAM(0x7402), LPARAM::default());
+    }
+
+    println!("{:b}", wi.dwStyle.0);
+    // SendMessageA(hWnd, WM_COMMAND, WPARAM(0x7402), LPARAM::default());
     // dbg!(ss.fHideIcons);
-    let copy = std::mem::transmute::<i32, u32>(ss._bitfield1);
-    let icons_hidden = copy & (1 << 12) != 0;
-    println!("10010100000110111\n{}", icons_hidden);
-    println!("{:b}", copy);
-    // if icons_hidden {
-    //     // there is no way to refresh explorer if the icons are hidden i tried so just show and hide
-    //     ss._bitfield1 &= !(1 << 12);
-    //     SHGetSetSettings(Some(&mut ss as *mut _), SSF_MASK(u32::MAX), true);
-    //     GetLastError().ok().unwrap();
-    // 
-    //     // ss._bitfield1 |= (1 << 12);
-    //     // SHGetSetSettings(Some(&mut ss as *mut _), SSF_MASK(u32::MAX), true);
-    //     // GetLastError().ok().unwrap();
-    // } else{
-    //     // equivalent to right click and refresh
-    //     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None);
-    // }
+    println!("Refreshed!")
 }
