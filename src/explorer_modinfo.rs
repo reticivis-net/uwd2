@@ -1,13 +1,13 @@
+use crate::constants::*;
 use std::mem::size_of;
 use std::path::Path;
 use sysinfo::Process;
-use crate::constants::*;
-use windows::core::{PCSTR, s};
 use windows::core::imp::CloseHandle;
-use windows::Win32::Foundation::{FALSE, GetLastError, HANDLE, HMODULE};
+use windows::core::{s, PCSTR};
+use windows::Win32::Foundation::{GetLastError, FALSE, HANDLE, HMODULE};
 use windows::Win32::System::Diagnostics::Debug::{
-    IMAGEHLP_MODULE64, SYM_LOAD_FLAGS, SymGetModuleInfo64, SymInitialize, SymLoadModuleEx,
-    SYMOPT_UNDNAME, SymSetOptions,
+    SymGetModuleInfo64, SymInitialize, SymLoadModuleEx, SymSetOptions, IMAGEHLP_MODULE64,
+    SYMOPT_UNDNAME, SYM_LOAD_FLAGS,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleExA;
 use windows::Win32::System::Threading::{OpenProcess, PROCESS_ALL_ACCESS};
@@ -46,7 +46,7 @@ pub unsafe fn get_explorer_handle() -> HANDLE {
             .pid()
             .as_u32();
 
-   OpenProcess(PROCESS_ALL_ACCESS, FALSE, explorerid).unwrap()
+    OpenProcess(PROCESS_ALL_ACCESS, FALSE, explorerid).unwrap()
 }
 
 pub unsafe fn get_shell32_modinfo() -> IMAGEHLP_MODULE64 {
@@ -57,7 +57,9 @@ pub unsafe fn get_shell32_modinfo() -> IMAGEHLP_MODULE64 {
     // let currentprocess = GetCurrentProcess();
     SymInitialize(explorerhandle, PCSTR::null(), true).expect("initializing failed");
     SymSetOptions(SYMOPT_UNDNAME);
-    let name = PCSTR::from_raw(format!("{}\0", SHELL32_PATH).as_ptr());
+    let nullterminatedpath = format!("{}\0", SHELL32_PATH);
+    // dbg!(&nullterminatedpath);
+    let name = PCSTR::from_raw(nullterminatedpath.as_ptr());
     let mut module = HMODULE::default();
     GetModuleHandleExA(0, name, &mut module as *mut HMODULE).unwrap();
     // let module = LoadLibraryExA(name, HANDLE::default(), LOAD_LIBRARY_FLAGS::default()).unwrap();

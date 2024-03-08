@@ -12,7 +12,6 @@ mod explorer_modinfo;
 mod fetch_pdb;
 mod inject;
 mod parse_pdb;
-mod patch;
 
 fn prog() -> String {
     // modified from https://stackoverflow.com/a/58113997/9044183
@@ -43,22 +42,6 @@ fn rva() -> u32 {
     rva
 }
 
-fn patch() {
-    unsafe {
-        elevate::elevate_if_needed();
-        patch::patch(rva());
-        patch::kill_explorer();
-    }
-}
-
-fn unpatch() {
-    unsafe {
-        elevate::elevate_if_needed();
-        patch::unpatch();
-        patch::kill_explorer();
-    }
-}
-
 fn inject() {
     unsafe {
         inject::inject(rva());
@@ -66,12 +49,12 @@ fn inject() {
     }
 }
 fn main() {
+    unsafe { inject::refresh(); }
+    return;
     match env::args().collect::<Vec<String>>().get(1) {
         None => inject(),
         Some(arg) => match arg.as_str() {
-            "patch" => patch(),
             "inject" => inject(),
-            "unpatch" => patch(),
             "help" => help(),
             "about" => {
                 println!(include_str!("../about.txt"), env!("CARGO_PKG_VERSION"))

@@ -5,7 +5,7 @@ use crate::fetch_pdb;
 use crate::fetch_pdb::fetch;
 use crate::parse_pdb::parse_pdb;
 
-pub fn get_rva(guid:String) -> u32 {
+pub fn get_rva(guid: String) -> u32 {
     // quick way to get usable directory
     let dir = data_dir();
     // dbg!(dir);

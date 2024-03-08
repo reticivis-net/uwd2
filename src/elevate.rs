@@ -26,7 +26,8 @@ unsafe fn is_admin() -> bool {
         Some(&mut elevation as *mut _ as *mut c_void),
         size,
         &mut ret_size,
-    ).unwrap();
+    )
+        .unwrap();
     // seems to be 0 = not admin, 1 = admin
     elevation.TokenIsElevated != 0
 }
