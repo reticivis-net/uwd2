@@ -2,9 +2,9 @@
 
 ![demo](demo.png)
 
-Created by: [Melody](https://reticivis.net/)
+Created by [Melody](https://reticivis.net/)
 
-Inspiration for this project: [Universal Watermark Disabler](https://github.com/pr701/universal-watermark-disabler)
+Inspired by [Universal Watermark Disabler](https://github.com/pr701/universal-watermark-disabler)
 by [Painter701](https://github.com/pr701)
 
 Written in [Rust](https://www.rust-lang.org/)
@@ -16,9 +16,12 @@ UWD2 removes that pesky watermark in the corner of Windows Insider builds, as we
 ## How to use it?
 
 Just run the exe file in the [releases tab](https://github.com/reticivis-net/uwd2/releases) and watch the watermark
-vanish before your eyes!
+vanish before your eyes! For best results, add UWD2
+as [a startup program](https://support.microsoft.com/en-us/windows/add-apps-to-the-startup-page-in-settings-3d219555-bc76-449d-ab89-0d2dd6307164).
 
 ## Some disclaimers
+
+**UWD2 DOES NOT REMOVE THE "ACTIVATE WINDOWS" WATERMARK!!!** UWD2 is for the insider beta watermark.
 
 **UWD2 DOES NOT persist between explorer.exe or system restarts**. [See why below](#how-does-it-work). For best results,
 add UWD2

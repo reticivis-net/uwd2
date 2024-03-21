@@ -7,7 +7,6 @@ use crate::explorer_modinfo::get_guid;
 
 mod cache_pdb;
 mod constants;
-mod elevate;
 mod explorer_modinfo;
 mod fetch_pdb;
 mod inject;
@@ -49,8 +48,6 @@ fn inject() {
     }
 }
 fn main() {
-    // unsafe { inject::refresh(); }
-    // return;
     match env::args().collect::<Vec<String>>().get(1) {
         None => inject(),
         Some(arg) => match arg.as_str() {
@@ -67,6 +64,4 @@ fn main() {
             }
         },
     }
-
-    // dbg!(pdbfile);
 }
