@@ -1,7 +1,5 @@
 use std::env;
 
-use pdb::FallibleIterator;
-
 use crate::cache_pdb::get_rva;
 use crate::explorer_modinfo::get_guid;
 

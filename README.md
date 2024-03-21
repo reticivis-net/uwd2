@@ -1,8 +1,8 @@
-# ![UWD2](banner.png)
+# ![UWD2](assets/banner.png)
 
 # Universal Watermark Disabler 2
 
-![demo](demo.png)
+![demo](assets/demo.png)
 
 Created by [Melody](https://reticivis.net/)
 
@@ -23,7 +23,9 @@ as [a startup program](https://support.microsoft.com/en-us/windows/add-apps-to-t
 
 ## Some disclaimers
 
-### **UWD2 DOES NOT REMOVE THE "ACTIVATE WINDOWS" WATERMARK!!!** UWD2 is for the insider beta watermark.
+### **UWD2 DOES NOT REMOVE THE "ACTIVATE WINDOWS" WATERMARK!!!**
+
+UWD2 is for the insider beta watermark.
 
 **UWD2 DOES NOT persist between explorer.exe or system restarts**. [See why below](#how-does-it-work). For best results,
 add UWD2

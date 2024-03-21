@@ -1,10 +1,12 @@
 use std::{env, io};
+
 use winres::WindowsResource;
+
 fn main() -> io::Result<()> {
     if env::var_os("CARGO_CFG_WINDOWS").is_some() {
         WindowsResource::new()
             // set exe icon
-            .set_icon("uwd2.ico")
+            .set_icon("assets/uwd2.ico")
             // require admin
             // .set_manifest(
             //                 r#"

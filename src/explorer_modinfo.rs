@@ -1,9 +1,8 @@
-use crate::constants::*;
 use std::mem::size_of;
 use std::path::Path;
-use sysinfo::Process;
+
 use windows::core::imp::CloseHandle;
-use windows::core::{s, PCSTR};
+use windows::core::PCSTR;
 use windows::Win32::Foundation::{GetLastError, FALSE, HANDLE, HMODULE};
 use windows::Win32::System::Diagnostics::Debug::{
     SymGetModuleInfo64, SymInitialize, SymLoadModuleEx, SymSetOptions, IMAGEHLP_MODULE64,
@@ -11,6 +10,8 @@ use windows::Win32::System::Diagnostics::Debug::{
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleExA;
 use windows::Win32::System::Threading::{OpenProcess, PROCESS_ALL_ACCESS};
+
+use crate::constants::*;
 
 pub unsafe fn get_guid() -> String {
     let modinfo = get_shell32_modinfo();
